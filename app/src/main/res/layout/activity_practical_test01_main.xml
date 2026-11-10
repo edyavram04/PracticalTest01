@@ -1,19 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<!-- CONTAINERUL PRINCIPAL (Ecranul complet) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
-    <TextView
+    android:orientation="vertical"
+    android:fitsSystemWindows="true"
+    android:padding="16dp">
+    
+    <!-- ================= ETAJUL 1: BUTONUL DE NAVIGARE ================= -->
+    <Button
+        android:id="@+id/navigate_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="end"
+        android:layout_marginBottom="16dp"
+        android:text="NAVIGATE TO SECONDARY ACTIVITY" />
+    <!--
+        id="@+id/navigate_button" -> Numele unic folosit în Kotlin cu findViewById(R.id.navigate_button).
+        layout_width="wrap_content" -> Lățimea e strict cât să încapă textul.
+            * Dacă cerința vrea butonul pe tot rândul: schimbi în "match_parent".
+        layout_gravity="end" -> Aliniază butonul în partea DREAPTĂ a ecranului.
+            * Dacă cerința îl vrea pe mijloc: pui "center_horizontal".
+            * Dacă îl vrea în stânga: pui "start".
+        layout_marginBottom="16dp" -> Lasă un spațiu gol de 16dp sub buton.
+        text="..." -> Textul afișat pe buton.
+    -->
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- ================= ETAJUL 2: RÂNDUL CU CELE 2 CÂMPURI TEXT ================= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <!--
+            layout_width="match_parent" -> Rândul ocupă toată lățimea ecranului.
+            layout_height="wrap_content" -> Înălțimea rândului e doar cât elementele din el.
+            orientation="horizontal" -> Pune elementele din interior UNUL LÂNGĂ ALTUL (pe aceeași linie).
+            weightSum="2" -> Împarte lățimea rândului în 2 părți totale.
+                * Dacă cerința îți cere 3 elemente egale pe un rând: pui weightSum="3".
+        -->
+
+        <!-- Câmpul text din STÂNGA -->
+        <EditText
+            android:id="@+id/left_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:saveEnabled="false"
+            android:gravity="center"
+            android:text="0" />
+        <!--
+            layout_width="0dp" + layout_weight="1" -> Ocupă 1 parte din cele 2 (adică 50% din rând).
+                * OBLIGATORIU pui width="0dp" când folosești layout_weight pe orizontală!
+                * Dacă cerința vrea ca primul să ocupe 2/3 și al doilea 1/3 (cu weightSum="3"):
+                  pui layout_weight="2" aici și layout_weight="1" la al doilea.
+            enabled="false" -> Face câmpul NEEDITABIL (utilizatorul nu poate scrie de la tastatură).
+                * Dacă cerința îți cere ca utilizatorul să introducă el un număr/text: ȘTERGI această linie!
+                * Dacă îți cere să poată scrie doar numere: ștergi enabled="false" și adaugi android:inputType="number".
+            saveEnabled="false" -> (Cerința B.2a) Oprește Android-ul din a salva automat textul când rotești ecranul.
+            gravity="center" -> Centrează cifra "0" în mijlocul căsuței.
+                * Pentru text aliniat la stânga: "start" | la dreapta: "end".
+            text="0" -> Valoarea inițială afișată pe ecran.
+                * Dacă cerința vrea un text ajutător gri (placeholder) care dispare când scrii:
+                  folosești android:hint="Introduceți text" în loc de android:text="0".
+        -->
+
+        <!-- Câmpul text din DREAPTA -->
+        <EditText
+            android:id="@+id/right_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:enabled="false"
+            android:saveEnabled="false"
+            android:gravity="center"
+            android:text="0" />
+
+    </LinearLayout>
+
+    <!-- ================= ETAJUL 3: RÂNDUL CU CELE 2 BUTOANE ================= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_marginTop="16dp">
+        <!--
+            layout_marginTop="16dp" -> Lasă 16dp spațiu față de rândul de EditText-uri de deasupra.
+            Aceeași schemă: orientation="horizontal" + weightSum="2" pentru împărțire 50% - 50%.
+        -->
+
+        <!-- Butonul din STÂNGA -->
+        <Button
+            android:id="@+id/left_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="PRESS ME!" />
+        <!--
+            layout_width="0dp" + layout_weight="1" -> Ocupă jumătatea din stânga (50%), deci stă centrat fix sub left_text.
+            layout_marginEnd="8dp" -> Lasă 8dp spațiu în dreapta butonului ca să nu stea lipit de celălalt buton.
+        -->
+
+        <!-- Butonul din DREAPTA -->
+        <Button
+            android:id="@+id/right_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="PRESS ME, TOO!" />
+        <!--
+            layout_width="0dp" + layout_weight="1" -> Ocupă jumătatea din dreapta (50%), fix sub right_text.
+            layout_marginStart="8dp" -> Lasă 8dp spațiu în stânga butonului.
+        -->
+
+    </LinearLayout>
+
+</LinearLayout>

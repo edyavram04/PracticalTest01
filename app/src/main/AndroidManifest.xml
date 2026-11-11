@@ -24,6 +24,7 @@
         <activity
             android:name=".PracticalTest01SecondaryActivity"
             android:exported="false" />
+        <service android:name=".PracticalTest01Service" />
     </application>
 
 </manifest>

@@ -21,6 +21,18 @@ class PracticalTest01MainActivity : AppCompatActivity() {
     private var leftCount = 0
     private var rightCount = 0
 
+    private val PRAG_SERVICIU = 5
+    private var isServiceStarted = false
+
+    private val messageReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
+            val actiune = intent.action
+            val datePrimite = intent.getStringExtra("mesaj_broadcast")
+            // Jurnalizarea în consolă
+            android.util.Log.d("EIM_BROADCAST", "Acțiune: $actiune | Mesaj: $datePrimite")
+        }
+    }
+    private lateinit var intentFilter: android.content.IntentFilter
 
     // Declararea lansatorului pentru activitatea secundară
     private val activityResultLauncher = registerForActivityResult(
@@ -62,11 +74,13 @@ class PracticalTest01MainActivity : AppCompatActivity() {
         leftButton.setOnClickListener {
             leftCount++
             leftText.setText(leftCount.toString())
+            verificaPragSiPornesteServiciu()  //PT SERVICII
         }
 
         rightButton.setOnClickListener {
             rightCount++
             rightText.setText(rightCount.toString())
+            verificaPragSiPornesteServiciu() //PT SERVICII
         }
         navigateButton.setOnClickListener {
             val intent = Intent(this, PracticalTest01SecondaryActivity::class.java)
@@ -78,13 +92,52 @@ class PracticalTest01MainActivity : AppCompatActivity() {
             activityResultLauncher.launch(intent)
 
         }
+        intentFilter = android.content.IntentFilter()
+        intentFilter.addAction("ro.pub.cs.systems.eim.practicaltest01.aritmetica")
+        intentFilter.addAction("ro.pub.cs.systems.eim.practicaltest01.geometrica")
+        intentFilter.addAction("ro.pub.cs.systems.eim.practicaltest01.routing")
         }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("leftCount", leftCount)
+        outState.putInt("rightCount", rightCount)
+    }
 
-        outState.putInt("leftCount",leftCount)
-        outState.putInt("rightCount",rightCount)
+    private fun verificaPragSiPornesteServiciu() {
+        if (leftCount + rightCount > PRAG_SERVICIU && !isServiceStarted) {
+            val intent = Intent(this, PracticalTest01Service::class.java)
+            intent.putExtra("leftCount", leftCount)
+            intent.putExtra("rightCount", rightCount)
+
+            // Pornim serviciul
+            startService(intent)
+            isServiceStarted = true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Pornim radioul când aplicația e în prim plan (Android 14+ necesită RECEIVER_EXPORTED, folosim varianta compatibilă)
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            messageReceiver,
+            intentFilter,
+            androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+        )
+    }
+
+    override fun onPause() {
+        // Oprim ascultarea radioului când aplicația e în fundal
+        unregisterReceiver(messageReceiver)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        // Cerință D.1 b) - Oprim serviciul când aplicația este distrusă
+        val intent = Intent(this, PracticalTest01Service::class.java)
+        stopService(intent)
+        super.onDestroy()
     }
     }
 
@@ -208,3 +261,71 @@ class PracticalTest01MainActivity : AppCompatActivity() {
     }
  =====================================================================================
 */
+
+/* SERVICIU
+// =====================================================================
+    // 1. DECLARAȚII SUS ÎN CLASĂ (Sub variabilele butoanelor)
+    // =====================================================================
+    private var isServiceStarted = false
+    private lateinit var intentFilter: android.content.IntentFilter
+
+    // Construim radioul care va asculta mesajele
+    private val myBroadcastReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
+            // Aici ajunge mesajul trimis din Serviciu!
+            val mesajPrimit = intent.getStringExtra("DATE_BROADCAST")
+            android.util.Log.d("EXAMEN_BROADCAST", "Am primit: $mesajPrimit")
+        }
+    }
+
+    // =====================================================================
+    // 2. INIȚIALIZARE ÎN onCreate()
+    // =====================================================================
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // ... (setContentView, findViewById etc) ...
+
+        // Setăm radioul pe frecvența corectă (ACEEAȘI din Serviciu)
+        intentFilter = android.content.IntentFilter()
+        intentFilter.addAction("ro.pub.cs.systems.eim.BROADCAST_ACTION_UNIV")
+
+        // Cum pornești serviciul (de obicei se pune pe un buton sau când se atinge un prag)
+        /*
+        butonStart.setOnClickListener {
+            if (!isServiceStarted) {
+                val serviceIntent = Intent(this, MyService::class.java)
+                serviceIntent.putExtra("CHEIE_DATE_1", 50)
+                startService(serviceIntent)
+                isServiceStarted = true
+            }
+        }
+        */
+    }
+
+    // =====================================================================
+    // 3. PORNIREA ȘI OPRIREA RADIOULUI (Atașate direct în clasă, sub onCreate)
+    // =====================================================================
+    override fun onResume() {
+        super.onResume()
+        // Pornim ascultarea când ecranul e activ
+        androidx.core.content.ContextCompat.registerReceiver(
+            this,
+            myBroadcastReceiver,
+            intentFilter,
+            androidx.core.content.ContextCompat.RECEIVER_EXPORTED
+        )
+    }
+
+    override fun onPause() {
+        // Oprim ascultarea când minimizăm aplicația (să nu consumăm baterie)
+        unregisterReceiver(myBroadcastReceiver)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        // Oprim complet Serviciul (crainicul din fundal) când se distruge aplicația
+        val serviceIntent = Intent(this, MyService::class.java)
+        stopService(serviceIntent)
+        super.onDestroy()
+    }
+ */
